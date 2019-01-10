@@ -4,6 +4,7 @@
 
 # Don't track these folders
 json/
+csv/
 
 # Don't track these files
 config.py
