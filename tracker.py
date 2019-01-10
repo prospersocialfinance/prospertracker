@@ -125,7 +125,3 @@ for index, ticker in enumerate(STOCKS):
         processed.seek(0)
         processed.write(json.dumps(processed_dict))
         processed.truncate()
-
-
-
-    
