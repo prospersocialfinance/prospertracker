@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, date
 from pathlib import Path
 
 import config
@@ -68,7 +68,7 @@ with requests.Session() as s:
             parsed_json = json.loads(data.text)
             temp = {key: val for key, val in parsed_json['history'].items()}
             for key, val in parsed_json['history'].items():
-                date_val = date.fromisoformat(key)
+                date_val = datetime.strptime(key, '%Y-%m-%d')
             if (date_val < date(2018, 1, 1)) or (5 <= date_val.weekday() <= 6):
                 temp.pop(key)
             parsed_json['history'] = temp
