@@ -15,7 +15,6 @@ with requests.Session() as s:
             'api_token': API_KEY,
             'date_from': '2017-12-31',
             'date_to': '2019-01-09',
-            # 'output': 'csv'
             }
         
         data = s.get(BASE_URL, params = payload)
