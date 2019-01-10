@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 import config
 import json
@@ -44,8 +45,8 @@ with requests.Session() as s:
             }
         
         data = s.get(URL + 'history', params = payload)
-
-        with open('json/stocks/' + ticker + '.json', 'w') as f:
+        Path('json/stocks/').mkdir(parents = True, exist_ok = True)
+        with open('json/stocks/' + ticker + '.json', 'w+') as f:
             parsed_json = json.loads(data.text)
             for key, val in parsed_json['history'].items():
                 parsed_json['history'][key] = val['close']
@@ -62,7 +63,8 @@ with requests.Session() as s:
         
         data = s.get(URL + 'forex_history', params = payload)
 
-        with open('json/currencies/' + currency + 'GBP.json', 'w') as f:
+        Path('json/currencies/').mkdir(parents = True, exist_ok = True)
+        with open('json/currencies/' + currency + 'GBP.json', 'w+') as f:
             parsed_json = json.loads(data.text)
             temp = {key: val for key, val in parsed_json['history'].items()}
             for key, val in parsed_json['history'].items():
