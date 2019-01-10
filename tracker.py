@@ -2,6 +2,7 @@ from datetime import datetime, date
 from pathlib import Path
 
 import config
+import csv
 import json
 import requests
 
@@ -29,6 +30,24 @@ def converter(stock, forex):
         stock_dict[key] = str(float(val) * float(forex_dict[key]))
     
     return json.dumps(stock_dict)
+
+#######################################################################
+# Converts JSON string to CSV. Accepts the JSON string, filename, and #  
+# a list of headers as arguments, and creates the CSV file in 'csv/'. #
+#######################################################################
+
+def json_to_csv(json_str, filename, headers):
+    parsed_json = json.loads(json_str)
+
+    Path('csv/').mkdir(parents = True, exist_ok = True)
+    with open('csv/' + filename + '.csv', 'w+') as outfile:
+        writer = csv.writer(outfile)
+        writer.writerow(headers)
+
+        for key, val in parsed_json.items():
+            writer.writerow([key, val])
+
+    return None
 
 ###############################
 # Retrieve and clean datasets #
@@ -155,4 +174,15 @@ for index, ticker in enumerate(STOCKS):
         processed.seek(0)
         processed.write(json.dumps(processed_dict))
         processed.truncate()
+
+#######################################################
+# Convert data from JSON to CSV for use with amCharts #
+#######################################################
+
+with open('json/processed.json', 'r') as f:
+    json_to_csv(f.read(), 'processed', ['date', 'value'])
+
+for benchmark in BENCHMARKS:
+    with open('json/benchmarks/' + benchmark + '.json', 'r') as f:
+        json_to_csv(f.read(), benchmark, ['date', 'value'])
 
