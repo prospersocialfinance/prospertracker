@@ -10,6 +10,7 @@ import requests
 ####################
 
 API_KEY = config.API_KEY
+BENCHMARKS = config.BENCHMARKS
 CURRENCIES = config.CURRENCIES
 URL = config.BASE_URL
 STOCKS = config.STOCKS
@@ -34,13 +35,31 @@ def converter(stock, forex):
 ###############################
 
 with requests.Session() as s:
+    # Retrieve and clean benchmark datasets
+    for benchmark in BENCHMARKS:
+        payload = {
+            'symbol': benchmark,
+            'sort': 'oldest',
+            'api_token': API_KEY,
+            'date_from': '2018-06-29',
+            'date_to': TODAY,
+        }
+
+        data = s.get(URL + 'history', params = payload)
+        Path('json/benchmarks/').mkdir(parents = True, exist_ok = True)
+        with open('json/benchmarks/' + benchmark + '.json', 'w+') as f:
+            parsed_json = json.loads(data.text)
+            for key, val in parsed_json['history'].items():
+                parsed_json['history'][key] = val['close']
+            f.write(json.dumps(parsed_json['history']))
+    
     # Retrieve and clean stock datasets
     for ticker in STOCKS:
         payload = {
             'symbol': ticker,
             'sort': 'oldest',
             'api_token': API_KEY,
-            'date_from': '2018-01-01',
+            'date_from': STOCKS[ticker]['date'],
             'date_to': TODAY,
             }
         
@@ -74,9 +93,18 @@ with requests.Session() as s:
             parsed_json['history'] = temp
             f.write(json.dumps(parsed_json['history']))
 
-##################################################
-# Convert non-GBP stocks into its GBP equivalent #
-##################################################
+#################################################
+# Convert non-GBP items into its GBP equivalent #
+#################################################
+
+for benchmark, info in BENCHMARKS.items():
+    if info['curr'] == 'GBP':
+        continue
+    with open ('json/benchmarks/' + benchmark + '.json', 'r+') as index, open ('json/currencies/' + info['curr'] + 'GBP.json', 'r') as forex:
+        converted = converter(index.read(), forex.read())
+        index.seek(0)
+        index.write(converted)
+        index.truncate()
 
 for ticker, info in STOCKS.items():
     if info['curr'] == 'GBP':
@@ -104,9 +132,9 @@ for ticker, info in STOCKS.items():
         stock.write(json.dumps(stock_dict))
         stock.truncate()
 
-############################################
-# Get the value of our portfolio  (in GBP) #
-############################################
+###########################################
+# Get the value of our portfolio (in GBP) #
+###########################################
 
 for index, ticker in enumerate(STOCKS):
     if index == 0:
@@ -127,3 +155,4 @@ for index, ticker in enumerate(STOCKS):
         processed.seek(0)
         processed.write(json.dumps(processed_dict))
         processed.truncate()
+
