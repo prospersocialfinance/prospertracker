@@ -68,7 +68,7 @@ with requests.Session() as s:
             parsed_json = json.loads(data.text)
             temp = {key: val for key, val in parsed_json['history'].items()}
             for key, val in parsed_json['history'].items():
-                date_val = datetime.strptime(key, '%Y-%m-%d')
+                date_val = datetime.strptime(key, '%Y-%m-%d').date()
             if (date_val < date(2018, 1, 1)) or (5 <= date_val.weekday() <= 6):
                 temp.pop(key)
             parsed_json['history'] = temp
