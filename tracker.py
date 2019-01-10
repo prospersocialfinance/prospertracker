@@ -28,8 +28,12 @@ def converter(stock, forex):
     
     return json.dumps(stock_dict)
 
+###############################
+# Retrieve and clean datasets #
+###############################
 
 with requests.Session() as s:
+    # Retrieve and clean stock datasets
     for ticker in STOCKS:
         payload = {
             'symbol': ticker,
@@ -42,20 +46,13 @@ with requests.Session() as s:
         data = s.get(URL + 'history', params = payload)
 
         with open('json/stocks/' + ticker + '.json', 'w') as f:
-            f.write(data.text)
-
-for ticker in STOCKS:
-    with open('json/stocks/' + ticker + '.json', 'r+') as f:
-        parsed_json = json.loads(f.read())
-        for key, val in parsed_json['history'].items():
-            parsed_json['history'][key] = val['close']
-        f.seek(0)
-        f.write(json.dumps(parsed_json['history']))
-        f.truncate()
-
-with requests.Session() as s:
+            parsed_json = json.loads(data.text)
+            for key, val in parsed_json['history'].items():
+                parsed_json['history'][key] = val['close']
+            f.write(json.dumps(parsed_json['history']))
+    
+    # Retrieve and clean currency datasets
     for currency in CURRENCIES:
-        # Define a dictionary of parameters that we will pass to the API endpoint
         payload = {
             'base': currency,
             'convert_to': 'GBP',
@@ -66,20 +63,18 @@ with requests.Session() as s:
         data = s.get(URL + 'forex_history', params = payload)
 
         with open('json/currencies/' + currency + 'GBP.json', 'w') as f:
-            f.write(data.text)
-
-for currency in CURRENCIES:
-    with open('json/currencies/' + currency + 'GBP.json', 'r+') as f:
-        parsed_json = json.loads(f.read())
-        temp = {key: val for key, val in parsed_json['history'].items()}
-        for key, val in parsed_json['history'].items():
-            date_val = date.fromisoformat(key)
+            parsed_json = json.loads(data.text)
+            temp = {key: val for key, val in parsed_json['history'].items()}
+            for key, val in parsed_json['history'].items():
+                date_val = date.fromisoformat(key)
             if (date_val < date(2018, 1, 1)) or (5 <= date_val.weekday() <= 6):
                 temp.pop(key)
-        parsed_json['history'] = temp
-        f.seek(0)
-        f.write(json.dumps(parsed_json['history']))
-        f.truncate()
+            parsed_json['history'] = temp
+            f.write(json.dumps(parsed_json['history']))
+
+##################################################
+# Convert non-GBP stocks into its GBP equivalent #
+##################################################
 
 for ticker, info in STOCKS.items():
     if info['curr'] == 'GBP':
@@ -89,6 +84,10 @@ for ticker, info in STOCKS.items():
         stock.seek(0)
         stock.write(converted)
         stock.truncate()
+
+#####################################################
+# Get the value of our portfolio per stock (in GBP) #
+#####################################################
 
 for ticker, info in STOCKS.items():
     with open ('json/stocks/' + ticker + '.json', 'r+') as stock:
@@ -103,7 +102,10 @@ for ticker, info in STOCKS.items():
         stock.write(json.dumps(stock_dict))
         stock.truncate()
 
-     
+############################################
+# Get the value of our portfolio  (in GBP) #
+############################################
+
 for index, ticker in enumerate(STOCKS):
     if index == 0:
         with open('json/processed.json', 'w') as processed:
