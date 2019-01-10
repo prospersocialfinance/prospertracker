@@ -13,6 +13,7 @@ import requests
 API_KEY = config.API_KEY
 BENCHMARKS = config.BENCHMARKS
 CURRENCIES = config.CURRENCIES
+INVESTMENT_DATES = config.DATES
 URL = config.BASE_URL
 STOCKS = config.STOCKS
 TODAY = date.isoformat(date.today())
@@ -174,6 +175,41 @@ for index, ticker in enumerate(STOCKS):
         processed.seek(0)
         processed.write(json.dumps(processed_dict))
         processed.truncate()
+
+# ########################################################
+# # Get the growth of benchmarks since 29/06/2018 (in %) #
+# ########################################################
+
+# for benchmark in BENCHMARKS:
+#     with open ('json/benchmarks/' + benchmark + '.json', 'r+') as f:
+#         benchmark_dict = json.loads(f.read())
+#         baseline = float(benchmark_dict['2018-06-29'])
+#         for key in benchmark_dict:
+#             benchmark_dict[key] = str(round(100 * float(benchmark_dict[key]) / baseline - 100, 2))
+#         f.seek(0)
+#         f.write(json.dumps(benchmark_dict))
+#         f.truncate()
+
+###########################################################
+# Get the growth of our portfolio since 29/06/2018 (in %) #
+###########################################################
+
+# with open('json/processed.json', 'r+') as processed:
+#     processed_dict = json.loads(processed.read())
+#     baseline = float(processed_dict['2018-06-29'])
+#     for key in processed_dict:
+#         if key in INVESTMENT_DATES:
+#             print(baseline)
+#             for ticker, info in STOCKS.items():
+#                 if info['date'] == key:
+#                    with open('json/stocks/' + ticker + '.json', 'r') as stock:
+#                        stock_dict = json.loads(stock.read()) 
+#                        baseline += float(stock_dict[key])
+#             print(baseline)
+#         processed_dict[key] = str(round(100 * float(processed_dict[key]) / baseline - 100, 2))
+#     processed.seek(0)
+#     processed.write(json.dumps(processed_dict))
+#     processed.truncate()
 
 #######################################################
 # Convert data from JSON to CSV for use with amCharts #
