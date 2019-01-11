@@ -4,7 +4,9 @@ from pathlib import Path
 import config
 import csv
 import json
+import os
 import requests
+import shutil
 
 ####################
 # Define constants #
@@ -14,6 +16,8 @@ API_KEY = config.API_KEY
 BENCHMARKS = config.BENCHMARKS
 CURRENCIES = config.CURRENCIES
 INVESTMENT_DATES = config.DATES
+MSCI_FORMAT = config.MSCI['format']
+MSCI_URL = config.MSCI['url']
 URL = config.BASE_URL
 STOCKS = config.STOCKS
 TODAY = date.isoformat(date.today())
@@ -50,6 +54,14 @@ def json_to_csv(json_str, filename, headers):
 
     return None
 
+#######################################################################
+# Calculate the percentage growth of a value relative to a specified  #
+# baseline. Returns the percentage growth with 2 d.p. accuracy.       #
+#######################################################################
+
+def pct_growth(val, base):
+    return round(100 * val / base - 100, 2)
+
 ###############################
 # Retrieve and clean datasets #
 ###############################
@@ -72,6 +84,23 @@ with requests.Session() as s:
             for key, val in parsed_json['history'].items():
                 parsed_json['history'][key] = val['close']
             f.write(json.dumps(parsed_json['history']))
+    
+    # Retrieve and clean MSCI dataset
+    payload = {
+            'indices': '96434,B,36',
+            'startDate': date(2018, 6, 29).strftime(MSCI_FORMAT),
+            'endDate': date.today().strftime(MSCI_FORMAT),
+            'priceLevel': '0',
+            'currency': '18',
+            'frequency': 'D',
+            'scope': 'R',
+            'format': 'CSV',
+            'baseValue': 'false',
+            'site': 'gimi'
+        }
+    data = s.get(MSCI_URL, params = payload)
+    with open('csv/temp.csv', 'w+') as f:
+        f.write(data.text)
     
     # Retrieve and clean stock datasets
     for ticker in STOCKS:
@@ -185,10 +214,23 @@ for benchmark in BENCHMARKS:
         benchmark_dict = json.loads(f.read())
         baseline = float(benchmark_dict['2018-06-29'])
         for key in benchmark_dict:
-            benchmark_dict[key] = str(round(100 * float(benchmark_dict[key]) / baseline - 100, 2))
+            benchmark_dict[key] = pct_growth(float(benchmark_dict[key]), baseline)
         f.seek(0)
         f.write(json.dumps(benchmark_dict))
         f.truncate()
+
+with open('csv/temp.csv', 'r+') as temp, open('csv/msci.csv', 'w+') as msci:
+        parsed_data = next(csv.reader(temp))
+        parsed_data.pop(0)
+        count = len(parsed_data) // 2
+        writer = csv.writer(msci)
+        writer.writerow(['date', 'value'])
+        baseline = float(parsed_data[1])
+        for i in range(count):
+            idx = 2 * i
+            key = date.isoformat(datetime.strptime(parsed_data[idx], "%m/%d/%Y").date())
+            val = pct_growth(float(parsed_data[idx + 1]), baseline)
+            writer.writerow([key, val])
 
 ###########################################################
 # Get the growth of our portfolio since 29/06/2018 (in %) #
@@ -204,7 +246,7 @@ with open('json/processed.json', 'r+') as processed:
                    with open('json/stocks/' + ticker + '.json', 'r') as stock:
                        stock_dict = json.loads(stock.read()) 
                        baseline += float(stock_dict[key])
-        processed_dict[key] = str(round(100 * float(processed_dict[key]) / baseline - 100, 2))
+        processed_dict[key] = pct_growth(float(processed_dict[key]), baseline)
     processed.seek(0)
     processed.write(json.dumps(processed_dict))
     processed.truncate()
@@ -220,3 +262,9 @@ for benchmark in BENCHMARKS:
     with open('json/benchmarks/' + benchmark + '.json', 'r') as f:
         json_to_csv(f.read(), benchmark, ['date', 'value'])
 
+#######################
+# Delete unused files #
+#######################
+
+os.remove('csv/temp.csv')
+shutil.rmtree('json/')
