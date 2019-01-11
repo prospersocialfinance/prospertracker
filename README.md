@@ -1,3 +1,3 @@
-This is the repository used for the development of a tracker on our website, https://prospersocialfinance.co.uk/.
+This is the repository used for the development of a portfolio performance tracker located on our website [here](https://prospersocialfinance.co.uk/investments/tracking).
 
-Currently under development.
+
