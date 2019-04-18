@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from pathlib import Path
 
 import config
@@ -200,7 +200,18 @@ for index, ticker in enumerate(STOCKS):
             try:
                 processed_dict[key] = str(float(processed_dict[key]) + float(stock_dict[key]))
             except KeyError:
-                pass    
+                curr_date = datetime.strptime(key, '%Y-%m-%d').date()
+                purchased_date = datetime.strptime(STOCKS[ticker]['date'], '%Y-%m-%d').date()
+                if curr_date >= purchased_date:
+                    stock_price = None
+                    while stock_price is None:
+                        curr_date -= timedelta(days=1)
+                        try:
+                            key = curr_date.strftime('%Y-%m-%d')
+                            processed_dict[key] = str(float(processed_dict[key]) + float(stock_dict[key]))
+                        except KeyError:
+                            pass
+                    print("Missing data for {} on {}".format(ticker, key))
         processed.seek(0)
         processed.write(json.dumps(processed_dict))
         processed.truncate()
@@ -266,5 +277,5 @@ for benchmark in BENCHMARKS:
 # Delete unused files #
 #######################
 
-os.remove('csv/temp.csv')
-shutil.rmtree('json/')
+# os.remove('csv/temp.csv')
+# shutil.rmtree('json/')
