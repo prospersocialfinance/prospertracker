@@ -200,25 +200,31 @@ for index, ticker in enumerate(STOCKS):
             try:
                 processed_dict[key] = str(float(processed_dict[key]) + float(stock_dict[key]))
             except KeyError:
+                # Check if this is a case of missing data, or just adding data from newer stocks
                 curr_date = datetime.strptime(key, '%Y-%m-%d').date()
                 purchased_date = datetime.strptime(STOCKS[ticker]['date'], '%Y-%m-%d').date()
+
+                # There is missing data
                 if curr_date >= purchased_date:
                     stock_price = None
                     while stock_price is None:
+                        # Interpolate based on yesterday's values
                         curr_date -= timedelta(days=1)
                         try:
-                            key = curr_date.strftime('%Y-%m-%d')
-                            processed_dict[key] = str(float(processed_dict[key]) + float(stock_dict[key]))
+                            yesterday = curr_date.strftime('%Y-%m-%d')
+                            stock_price = float(stock_dict[yesterday])
+                            processed_dict[key] = str(float(processed_dict[key]) + stock_price)
                         except KeyError:
+                            # Missing data in yesterday's values. Go back one extra day.
                             pass
-                    print("Missing data for {} on {}".format(ticker, key))
+                    
         processed.seek(0)
         processed.write(json.dumps(processed_dict))
         processed.truncate()
 
-# ########################################################
-# # Get the growth of benchmarks since 29/06/2018 (in %) #
-# ########################################################
+########################################################
+# Get the growth of benchmarks since 29/06/2018 (in %) #
+########################################################
 
 for benchmark in BENCHMARKS:
     with open ('json/benchmarks/' + benchmark + '.json', 'r+') as f:
@@ -277,5 +283,5 @@ for benchmark in BENCHMARKS:
 # Delete unused files #
 #######################
 
-# os.remove('csv/temp.csv')
-# shutil.rmtree('json/')
+os.remove('csv/temp.csv')
+shutil.rmtree('json/')
