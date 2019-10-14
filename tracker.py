@@ -159,16 +159,18 @@ def get_json_names():
 # Convert non-GBP items into its GBP equivalent #
 #################################################
 
-for benchmark, info in BENCHMARKS.items():
-    if info["curr"] == "GBP":
-        continue
-    with open("json/benchmarks/" + benchmark + ".json", "r+") as index, open(
-        "json/currencies/" + info["curr"] + "GBP.json", "r"
-    ) as forex:
-        converted = converter(index.read(), forex.read())
-        index.seek(0)
-        index.write(converted)
-        index.truncate()
+# for benchmark, info in BENCHMARKS.items():
+#     if info["curr"] == "GBP":
+#         continue
+#     with open("json/benchmarks/" + benchmark + ".json", "r+") as index, open(
+#         "json/currencies/" + info["curr"] + "GBP.json", "r"
+#     ) as forex:
+#         converted = converter(index.read(), forex.read())
+#         index.seek(0)
+#         index.write(converted)
+#         index.truncate()
+
+print(get_json_names())
 
 for execution_date, stocks in STOCKS.items():
     for ticker, info in stocks.items():
@@ -255,28 +257,28 @@ for index, json_file in enumerate(get_json_names()):
 # Get the growth of benchmarks since 29/06/2018 (in %) #
 ########################################################
 
-for benchmark in BENCHMARKS:
-    with open("json/benchmarks/" + benchmark + ".json", "r+") as f:
-        benchmark_dict = json.loads(f.read())
-        baseline = float(benchmark_dict["2018-06-29"])
-        for key in benchmark_dict:
-            benchmark_dict[key] = pct_growth(float(benchmark_dict[key]), baseline)
-        f.seek(0)
-        f.write(json.dumps(benchmark_dict))
-        f.truncate()
+# for benchmark in BENCHMARKS:
+#     with open("json/benchmarks/" + benchmark + ".json", "r+") as f:
+#         benchmark_dict = json.loads(f.read())
+#         baseline = float(benchmark_dict["2018-06-29"])
+#         for key in benchmark_dict:
+#             benchmark_dict[key] = pct_growth(float(benchmark_dict[key]), baseline)
+#         f.seek(0)
+#         f.write(json.dumps(benchmark_dict))
+#         f.truncate()
 
-with open("csv/temp.csv", "r+") as temp, open("csv/msci.csv", "w+") as msci:
-    parsed_data = next(csv.reader(temp))
-    parsed_data.pop(0)
-    count = len(parsed_data) // 2
-    writer = csv.writer(msci)
-    writer.writerow(["date", "value"])
-    baseline = float(parsed_data[1])
-    for i in range(count):
-        idx = 2 * i
-        key = date.isoformat(datetime.strptime(parsed_data[idx], "%m/%d/%Y").date())
-        val = pct_growth(float(parsed_data[idx + 1]), baseline)
-        writer.writerow([key, val])
+# with open("csv/temp.csv", "r+") as temp, open("csv/msci.csv", "w+") as msci:
+#     parsed_data = next(csv.reader(temp))
+#     parsed_data.pop(0)
+#     count = len(parsed_data) // 2
+#     writer = csv.writer(msci)
+#     writer.writerow(["date", "value"])
+#     baseline = float(parsed_data[1])
+#     for i in range(count):
+#         idx = 2 * i
+#         key = date.isoformat(datetime.strptime(parsed_data[idx], "%m/%d/%Y").date())
+#         val = pct_growth(float(parsed_data[idx + 1]), baseline)
+#         writer.writerow([key, val])
 
 ###########################################################
 # Get the growth of our portfolio since 29/06/2018 (in %) #
