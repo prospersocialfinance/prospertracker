@@ -113,19 +113,21 @@ with requests.Session() as s:
         f.write(data.text)
 
     # Retrieve and clean stock datasets
-    for date, stocks in STOCKS.items():
+    for execution_date, stocks in STOCKS.items():
         for ticker in stocks:
             payload = {
                 "symbol": ticker,
                 "sort": "oldest",
                 "api_token": API_KEY,
-                "date_from": date,
+                "date_from": execution_date,
                 "date_to": TODAY,
             }
 
             data = s.get(URL + "history", params=payload)
             Path("json/stocks/").mkdir(parents=True, exist_ok=True)
-            with open("json/stocks/{}_{}_.json".format(ticker, date), "w+") as f:
+            with open(
+                "json/stocks/{}_{}_.json".format(ticker, execution_date), "w+"
+            ) as f:
                 parsed_json = json.loads(data.text)
                 for key, val in parsed_json["history"].items():
                     parsed_json["history"][key] = val["close"]
@@ -168,13 +170,13 @@ for benchmark, info in BENCHMARKS.items():
         index.write(converted)
         index.truncate()
 
-for date, stocks in STOCKS.items():
-    for ticker in stocks:
+for execution_date, stocks in STOCKS.items():
+    for ticker, info in stocks.items():
         if info["curr"] == "GBP":
             continue
-        with open("json/stocks/{}_{}_.json".format(ticker, date), "r+") as stock, open(
-            "json/currencies/" + info["curr"] + "GBP.json", "r"
-        ) as forex:
+        with open(
+            "json/stocks/{}_{}_.json".format(ticker, execution_date), "r+"
+        ) as stock, open("json/currencies/" + info["curr"] + "GBP.json", "r") as forex:
             converted = converter(stock.read(), forex.read())
             stock.seek(0)
             stock.write(converted)
@@ -184,9 +186,11 @@ for date, stocks in STOCKS.items():
 # Get the value of our portfolio per stock (in GBP) #
 #####################################################
 
-for date, stocks in STOCKS.items():
-    for ticker in stocks:
-        with open("json/stocks/{}_{}.json".format(ticker, date), "r+") as stock:
+for execution_date, stocks in STOCKS.items():
+    for ticker, info in stocks.items():
+        with open(
+            "json/stocks/{}_{}_.json".format(ticker, execution_date), "r+"
+        ) as stock:
             stock_dict = json.loads(stock.read())
 
             for key, val in stock_dict.items():
@@ -205,11 +209,13 @@ for date, stocks in STOCKS.items():
 for index, json_file in enumerate(get_json_names()):
     if index == 0:
         with open("json/processed.json", "w") as processed:
-            for line in open(json_file):
+            for line in open("json/stocks/" + json_file):
                 processed.write(line)
         continue
 
-    with open("json/processed.json", "r+") as processed, open(json_file, "r") as stock:
+    with open("json/processed.json", "r+") as processed, open(
+        "json/stocks/" + json_file, "r"
+    ) as stock:
         processed_dict = json.loads(processed.read())
         stock_dict = json.loads(stock.read())
 
@@ -281,11 +287,12 @@ with open("json/processed.json", "r+") as processed:
     baseline = 0
     for key in processed_dict:
         if key in INVESTMENT_DATES:
-            for date, stocks in STOCKS.items():
-                if date == key:
+            for execution_date, stocks in STOCKS.items():
+                if execution_date == key:
                     for ticker in stocks:
                         with open(
-                            "json/stocks/{}_{}_.json".format(ticker, date), "r"
+                            "json/stocks/{}_{}_.json".format(ticker, execution_date),
+                            "r",
                         ) as stock:
                             stock_dict = json.loads(stock.read())
                             baseline += float(stock_dict[key])
