@@ -8,6 +8,7 @@ csv/
 
 # Don't track these files
 config.py
+tracker.sh
 
 #########################################################################
 # FROM https://github.com/github/gitignore/blob/master/Python.gitignore #
