@@ -76,84 +76,84 @@ def get_json_names():
 # Retrieve and clean datasets #
 ###############################
 
-with requests.Session() as s:
-    # Retrieve and clean benchmark datasets
-    for benchmark in BENCHMARKS:
-        payload = {
-            "symbol": benchmark,
-            "sort": "oldest",
-            "api_token": API_KEY,
-            "date_from": "2018-06-29",
-            "date_to": TODAY,
-        }
+# with requests.Session() as s:
+#     # Retrieve and clean benchmark datasets
+#     for benchmark in BENCHMARKS:
+#         payload = {
+#             "symbol": benchmark,
+#             "sort": "oldest",
+#             "api_token": API_KEY,
+#             "date_from": "2018-06-29",
+#             "date_to": TODAY,
+#         }
 
-        data = s.get(URL + "history", params=payload)
-        Path("json/benchmarks/").mkdir(parents=True, exist_ok=True)
-        with open("json/benchmarks/" + benchmark + ".json", "w+") as f:
-            parsed_json = json.loads(data.text)
-            for key, val in parsed_json["history"].items():
-                parsed_json["history"][key] = val["close"]
-            f.write(json.dumps(parsed_json["history"]))
+#         data = s.get(URL + "history", params=payload)
+#         Path("json/benchmarks/").mkdir(parents=True, exist_ok=True)
+#         with open("json/benchmarks/" + benchmark + ".json", "w+") as f:
+#             parsed_json = json.loads(data.text)
+#             for key, val in parsed_json["history"].items():
+#                 parsed_json["history"][key] = val["close"]
+#             f.write(json.dumps(parsed_json["history"]))
 
-    # Retrieve and clean MSCI dataset
-    payload = {
-        "indices": "96434,B,36",
-        "startDate": date(2018, 6, 29).strftime(MSCI_FORMAT),
-        "endDate": date.today().strftime(MSCI_FORMAT),
-        "priceLevel": "0",
-        "currency": "18",
-        "frequency": "D",
-        "scope": "R",
-        "format": "CSV",
-        "baseValue": "false",
-        "site": "gimi",
-    }
-    data = s.get(MSCI_URL, params=payload)
-    with open("csv/temp.csv", "w+") as f:
-        f.write(data.text)
+#     # Retrieve and clean MSCI dataset
+#     payload = {
+#         "indices": "96434,B,36",
+#         "startDate": date(2018, 6, 29).strftime(MSCI_FORMAT),
+#         "endDate": date.today().strftime(MSCI_FORMAT),
+#         "priceLevel": "0",
+#         "currency": "18",
+#         "frequency": "D",
+#         "scope": "R",
+#         "format": "CSV",
+#         "baseValue": "false",
+#         "site": "gimi",
+#     }
+#     data = s.get(MSCI_URL, params=payload)
+#     with open("csv/temp.csv", "w+") as f:
+#         f.write(data.text)
 
-    # Retrieve and clean stock datasets
-    for execution_date, stocks in STOCKS.items():
-        for ticker in stocks:
-            payload = {
-                "symbol": ticker,
-                "sort": "oldest",
-                "api_token": API_KEY,
-                "date_from": execution_date,
-                "date_to": TODAY,
-            }
+#     # Retrieve and clean stock datasets
+#     for execution_date, stocks in STOCKS.items():
+#         for ticker in stocks:
+#             payload = {
+#                 "symbol": ticker,
+#                 "sort": "oldest",
+#                 "api_token": API_KEY,
+#                 "date_from": execution_date,
+#                 "date_to": TODAY,
+#             }
 
-            data = s.get(URL + "history", params=payload)
-            Path("json/stocks/").mkdir(parents=True, exist_ok=True)
-            with open(
-                "json/stocks/{}_{}_.json".format(ticker, execution_date), "w+"
-            ) as f:
-                parsed_json = json.loads(data.text)
-                for key, val in parsed_json["history"].items():
-                    parsed_json["history"][key] = val["close"]
-                f.write(json.dumps(parsed_json["history"]))
+#             data = s.get(URL + "history", params=payload)
+#             Path("json/stocks/").mkdir(parents=True, exist_ok=True)
+#             with open(
+#                 "json/stocks/{}_{}_.json".format(ticker, execution_date), "w+"
+#             ) as f:
+#                 parsed_json = json.loads(data.text)
+#                 for key, val in parsed_json["history"].items():
+#                     parsed_json["history"][key] = val["close"]
+#                 f.write(json.dumps(parsed_json["history"]))
 
-    # Retrieve and clean currency datasets
-    for currency in CURRENCIES:
-        payload = {
-            "base": currency,
-            "convert_to": "GBP",
-            "api_token": API_KEY,
-            "sort": "oldest",
-        }
+#     # Retrieve and clean currency datasets
+#     for currency in CURRENCIES:
+#         payload = {
+#             "base": currency,
+#             "convert_to": "GBP",
+#             "api_token": API_KEY,
+#             "sort": "oldest",
+#         }
 
-        data = s.get(URL + "forex_history", params=payload)
+#         data = s.get(URL + "forex_history", params=payload)
 
-        Path("json/currencies/").mkdir(parents=True, exist_ok=True)
-        with open("json/currencies/" + currency + "GBP.json", "w+") as f:
-            parsed_json = json.loads(data.text)
-            temp = {key: val for key, val in parsed_json["history"].items()}
-            for key, val in parsed_json["history"].items():
-                date_val = datetime.strptime(key, "%Y-%m-%d").date()
-            if (date_val < date(2018, 1, 1)) or (5 <= date_val.weekday() <= 6):
-                temp.pop(key)
-            parsed_json["history"] = temp
-            f.write(json.dumps(parsed_json["history"]))
+#         Path("json/currencies/").mkdir(parents=True, exist_ok=True)
+#         with open("json/currencies/" + currency + "GBP.json", "w+") as f:
+#             parsed_json = json.loads(data.text)
+#             temp = {key: val for key, val in parsed_json["history"].items()}
+#             for key, val in parsed_json["history"].items():
+#                 date_val = datetime.strptime(key, "%Y-%m-%d").date()
+#             if (date_val < date(2018, 1, 1)) or (5 <= date_val.weekday() <= 6):
+#                 temp.pop(key)
+#             parsed_json["history"] = temp
+#             f.write(json.dumps(parsed_json["history"]))
 
 #################################################
 # Convert non-GBP items into its GBP equivalent #
@@ -316,6 +316,6 @@ for benchmark in BENCHMARKS:
 # Delete unused files #
 #######################
 
-os.remove("csv/temp.csv")
-shutil.rmtree("json/")
+# os.remove("csv/temp.csv")
+# shutil.rmtree("json/")
 
