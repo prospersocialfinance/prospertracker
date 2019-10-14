@@ -71,7 +71,7 @@ def pct_growth(val, base):
 def get_json_names():
     return sorted(
         os.listdir("json/stocks"),
-        key=lambda x: datetime.strptime(x.split("_")[1], "%Y-%m-%d"),
+        key=lambda x: (datetime.strptime(x.split("_")[1], "%Y-%m-%d"), x.split("_")[0]),
     )
 
 
