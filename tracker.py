@@ -57,8 +57,6 @@ def json_to_csv(json_str, filename, headers):
 
     return None
 
-#this is a line of comment#
-
 
 #######################################################################
 # Calculate the percentage growth of a value relative to a specified  #
