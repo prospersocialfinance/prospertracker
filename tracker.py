@@ -88,14 +88,6 @@ with requests.Session() as s:
             "date_from": "2018-06-29",
             "date_to": TODAY,
         }
-        
-#         payload = {
-#             "symbol": benchmark,
-#             "sort": "oldest",
-#             "api_token": LqWKXWlVIpVGDdx0EcqWSiu98zEUGPOTcRoTEebHimghjdqo9JNCKI7cWaA5,
-#             "date_from": "2018-06-29",
-#             "date_to": TODAY,
-#         }
 
         data = s.get(URL + "eod", params=payload)
         print(data.text)
