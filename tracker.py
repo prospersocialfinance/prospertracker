@@ -88,9 +88,17 @@ with requests.Session() as s:
             "date_from": "2018-06-29",
             "date_to": TODAY,
         }
+        
+#         payload = {
+#             "symbol": benchmark,
+#             "sort": "oldest",
+#             "api_token": LqWKXWlVIpVGDdx0EcqWSiu98zEUGPOTcRoTEebHimghjdqo9JNCKI7cWaA5,
+#             "date_from": "2018-06-29",
+#             "date_to": TODAY,
+#         }
 
         data = s.get(URL + "history", params=payload)
-        print(data)
+        print(data.text)
         Path("json/benchmarks/").mkdir(parents=True, exist_ok=True)
         with open("json/benchmarks/" + benchmark + ".json", "w+") as f:
             parsed_json = json.loads(data.text)
