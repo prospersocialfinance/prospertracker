@@ -82,14 +82,14 @@ with requests.Session() as s:
     # Retrieve and clean benchmark datasets
     for benchmark in BENCHMARKS:
         payload = {
-            "symbol": benchmark,
+            "symbols": benchmark,
             "sort": "oldest",
-            "api_token": API_KEY,
+            "access_key": API_KEY,
             "date_from": "2018-06-29",
             "date_to": TODAY,
         }
 
-        data = s.get(URL + "history", params=payload)
+        data = s.get(URL + "eod", params=payload)
         print(data.text)
         Path("json/benchmarks/").mkdir(parents=True, exist_ok=True)
         with open("json/benchmarks/" + benchmark + ".json", "w+") as f:
