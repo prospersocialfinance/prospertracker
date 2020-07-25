@@ -90,6 +90,7 @@ with requests.Session() as s:
         }
 
         data = s.get(URL + "history", params=payload)
+        print(data)
         Path("json/benchmarks/").mkdir(parents=True, exist_ok=True)
         with open("json/benchmarks/" + benchmark + ".json", "w+") as f:
             parsed_json = json.loads(data.text)
