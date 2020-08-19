@@ -26,7 +26,7 @@ TODAY = date.isoformat(date.today())
 # Converts a non-GBP stock's price to its GBP equivalent. Accepts the stock JSON #
 # and relevant currency JSON as arguments, and outputs the converted stock JSON. #
 ##################################################################################
-
+#uyas
 
 def converter(stock, forex):
     stock_dict = json.loads(stock)
